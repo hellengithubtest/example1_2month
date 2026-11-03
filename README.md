@@ -6,6 +6,7 @@
 - хранение паролей в BCrypt;
 - разграничение доступа по ролям;
 - защиту POST-запросов с помощью CSRF-токена.
+- безопасные атрибуты сессионной cookie в production-профиле.
 
 ## Зачем нужен CSRF-токен
 
@@ -153,9 +154,71 @@ Location: http://localhost:8090/login
 ./gradlew bootJar
 ```
 
+## Безопасная сессионная cookie и HTTPS
+
+При обычном локальном запуске используется HTTP, поэтому атрибут `Secure` у
+сессионной cookie не включён: иначе браузер не отправлял бы её на
+`http://localhost`. Для production предусмотрен отдельный профиль `prod`. Он:
+
+- включает HTTPS на порту `8443`;
+- устанавливает для `JSESSIONID` атрибуты `Secure` и `HttpOnly`;
+- устанавливает `SameSite=Lax`;
+- получает путь к хранилищу сертификата и пароль только из переменных окружения.
+
+`HttpOnly` запрещает JavaScript читать cookie, `Secure` разрешает браузеру
+отправлять её только по HTTPS, а `SameSite=Lax` ограничивает отправку cookie в
+межсайтовых запросах. `SameSite` дополняет CSRF-токен, но не заменяет его.
+
+Для локальной проверки production-профиля можно создать тестовый самоподписанный
+сертификат (не использовать его на настоящем production-сервере):
+
+```bash
+keytool -genkeypair \
+  -alias app \
+  -keyalg RSA \
+  -keysize 2048 \
+  -storetype PKCS12 \
+  -keystore local-cert.p12 \
+  -validity 365 \
+  -storepass changeit \
+  -dname "CN=localhost, OU=Development, O=IPR, C=RU" \
+  -ext "SAN=dns:localhost,ip:127.0.0.1"
+```
+
+Запустить приложение с профилем `prod`:
+
+```bash
+export SSL_KEY_STORE="file:$(pwd)/local-cert.p12"
+export SSL_KEY_STORE_PASSWORD="changeit"
+export SSL_KEY_ALIAS="app"
+SPRING_PROFILES_ACTIVE=prod ./gradlew bootRun
+```
+
+Открыть <https://localhost:8443/login>. Браузер предупредит о недоверенном
+самоподписанном сертификате — для локальной проверки это ожидаемо.
+
+Получить страницу входа и проверить заголовок `Set-Cookie` через `curl`:
+
+```bash
+curl -k -i -c secure-cookies.txt https://localhost:8443/login
+```
+
+В заголовке должен присутствовать результат примерно такого вида:
+
+```text
+Set-Cookie: JSESSIONID=...; Path=/; Secure; HttpOnly; SameSite=Lax
+```
+
+Файлы сертификатов и закрытых ключей (`*.p12`, `*.pfx`, `*.jks`, `*.pem`,
+`*.key`) добавлены в `.gitignore` и не должны попадать в репозиторий. В настоящем
+production следует использовать сертификат, выданный доверенным центром
+сертификации, и хранить пароль в менеджере секретов или переменных окружения.
+
 ## Где находится реализация
 
 - `src/main/resources/templates/login.html` — HTML-форма с CSRF-полем;
 - `src/main/java/org/springsecurity/example/rest/LoginPageController.java` — отображение страницы `/login`;
 - `src/main/java/org/springsecurity/example/security/SecurityConfig.java` — form login, CSRF и правила доступа;
-- `src/test/java/org/springsecurity/example/LoginCsrfIntegrationTest.java` — интеграционные проверки.
+- `src/main/resources/application-prod.yml` — HTTPS и безопасные cookie для профиля `prod`;
+- `src/test/java/org/springsecurity/example/LoginCsrfIntegrationTest.java` — интеграционные проверки CSRF;
+- `src/test/java/org/springsecurity/example/ProductionCookieConfigurationTest.java` — проверка production-настроек cookie и HTTPS.

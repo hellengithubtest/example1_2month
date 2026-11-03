@@ -39,3 +39,10 @@ build/
 .DS_Store
 
 .idea/
+
+### TLS certificates and private keys ###
+*.p12
+*.pfx
+*.jks
+*.pem
+*.key
