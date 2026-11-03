@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Доступ запрещён · Security Lab</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="login-page">
+<main class="error-card">
+    <div class="error-code" aria-hidden="true">403</div>
+    <p class="eyebrow">НЕДОСТАТОЧНО ПРАВ</p>
+    <h1>Доступ запрещён</h1>
+    <p class="error-description">
+        Ваша учётная запись не имеет роли, необходимой для просмотра этой страницы.
+    </p>
+
+    <div class="signed-in-as" th:if="${currentUser != null}">
+        Вы вошли как <strong th:text="${currentUser}">user1</strong>
+    </div>
+
+    <div class="error-actions">
+        <a class="primary-button button-link" th:href="@{/user}">К списку пользователей</a>
+        <form method="post" th:action="@{/logout}">
+            <button class="secondary-button" type="submit">Выйти</button>
+        </form>
+    </div>
+</main>
+</body>
+</html>

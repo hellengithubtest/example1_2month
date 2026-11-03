@@ -9,7 +9,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -30,16 +29,16 @@ public class SecurityConfig {
         return webSecurity -> webSecurity.ignoring().requestMatchers("/h2-console/**");
     }
 
-    // Основной фильтр безопасности с настройкой CSRF и куки
+    // Основной фильтр безопасности. CSRF-токен хранится в HTTP-сессии
+    // и добавляется Thymeleaf в POST-форму входа.
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .csrf((csrf) -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) )
+                .csrf(withDefaults())
                 .sessionManagement(withDefaults())
                 .authorizeHttpRequests(authorize ->
                         authorize
-                                .requestMatchers("/login.html", "/login", "/deny.html").permitAll()
+                                .requestMatchers("/login", "/403", "/css/**").permitAll()
                                 .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers("/company/**").hasAuthority("ROLE_MANAGER")
                                 .requestMatchers("/user/**").hasAuthority("ROLE_USER")
@@ -47,11 +46,12 @@ public class SecurityConfig {
                                 .requestMatchers("/**").denyAll()
                 )
                 .formLogin(fl ->
-                        fl.loginPage("/login.html")
+                                fl.loginPage("/login")
                                 .loginProcessingUrl("/login")
-                                .failureUrl("/deny.html")
+                                .failureUrl("/login?error")
                                 .defaultSuccessUrl("/user", true)
                 )
+                .exceptionHandling(exceptions -> exceptions.accessDeniedPage("/403"))
                 .build();
     }
 

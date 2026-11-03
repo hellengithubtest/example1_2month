@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Пользователи · Security Lab</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="app-page">
+<header class="topbar">
+    <a class="brand" th:href="@{/user}">
+        <span class="brand-mark brand-mark-small" aria-hidden="true">S</span>
+        <span>Security Lab</span>
+    </a>
+
+    <div class="account-panel">
+        <span class="current-user">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span th:text="${currentUser}">user1</span>
+        </span>
+        <form method="post" th:action="@{/logout}">
+            <button class="secondary-button" type="submit">Выйти</button>
+        </form>
+    </div>
+</header>
+
+<main class="page-content">
+    <section class="page-heading">
+        <div>
+            <p class="eyebrow">УПРАВЛЕНИЕ ДОСТУПОМ</p>
+            <h1>Пользователи</h1>
+            <p>Список учётных записей и назначенных им ролей.</p>
+        </div>
+        <div class="summary-card">
+            <strong th:text="${#lists.size(users)}">0</strong>
+            <span>пользователей</span>
+        </div>
+    </section>
+
+    <section class="table-card" aria-labelledby="users-table-title">
+        <div class="table-card-header">
+            <div>
+                <h2 id="users-table-title">Активные учётные записи</h2>
+                <p>Пароли не выводятся — отображаются только безопасные данные профиля.</p>
+            </div>
+        </div>
+
+        <div class="table-scroll" th:if="${not #lists.isEmpty(users)}">
+            <table class="users-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Пользователь</th>
+                    <th>Роли</th>
+                    <th>Статус</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${users}">
+                    <td class="user-id" th:text="${'#' + user.id}">#3001</td>
+                    <td>
+                        <div class="user-cell">
+                            <span class="avatar" th:text="${#strings.toUpperCase(#strings.substring(user.login, 0, 1))}">U</span>
+                            <div>
+                                <strong th:text="${user.login}">user1</strong>
+                                <span>Локальная учётная запись</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="role-list">
+                            <span class="role-badge"
+                                  th:each="role : ${user.roles}"
+                                  th:classappend="${' role-' + #strings.toLowerCase(role)}"
+                                  th:text="${#strings.toUpperCase(role)}">USER</span>
+                        </div>
+                    </td>
+                    <td><span class="active-badge">Активен</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(users)}">
+            <div class="empty-icon" aria-hidden="true">0</div>
+            <h3>Пользователей пока нет</h3>
+            <p>Добавьте данные, и они появятся в этом списке.</p>
+        </div>
+    </section>
+</main>
+
+<footer class="page-footer">
+    Spring Security учебный проект · Данные загружены из H2
+</footer>
+</body>
+</html>
