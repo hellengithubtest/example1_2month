@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Администрирование · Security Lab</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="app-page">
+<header class="topbar">
+    <a class="brand" th:href="@{/admin}">
+        <span class="brand-mark brand-mark-small" aria-hidden="true">S</span>
+        <span>Security Lab</span>
+    </a>
+
+    <div class="account-panel">
+        <span class="admin-badge">ADMIN</span>
+        <span class="current-user">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span th:text="${currentUser}">admin</span>
+        </span>
+        <form method="post" th:action="@{/logout}">
+            <button class="secondary-button" type="submit">Выйти</button>
+        </form>
+    </div>
+</header>
+
+<main class="page-content">
+    <section class="page-heading">
+        <div>
+            <p class="eyebrow">ЗАЩИЩЁННАЯ ЗОНА</p>
+            <h1>Панель администратора</h1>
+            <p>Эта страница доступна только пользователям с ролью ADMIN.</p>
+        </div>
+    </section>
+
+    <section class="admin-summary" aria-label="Сводка">
+        <article class="summary-card admin-summary-card">
+            <strong th:text="${totalUsers}">0</strong>
+            <span>всего пользователей</span>
+        </article>
+        <article class="summary-card admin-summary-card">
+            <strong th:text="${adminCount}">0</strong>
+            <span>администраторов</span>
+        </article>
+        <article class="security-card">
+            <span class="security-icon" aria-hidden="true">✓</span>
+            <div>
+                <strong>Доступ подтверждён</strong>
+                <span>Spring Security проверил роль ROLE_ADMIN</span>
+            </div>
+        </article>
+    </section>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}">
+        Операция выполнена
+    </div>
+    <div class="alert alert-error" th:if="${errorMessage}" th:text="${errorMessage}">
+        Не удалось выполнить операцию
+    </div>
+
+    <section class="admin-create-card" aria-labelledby="create-user-title">
+        <div>
+            <p class="eyebrow">НОВАЯ УЧЁТНАЯ ЗАПИСЬ</p>
+            <h2 id="create-user-title">Создать пользователя</h2>
+            <p>Пароль будет сохранён в виде BCrypt-хэша.</p>
+        </div>
+        <form class="admin-form-grid" method="post" th:action="@{/admin/users}">
+            <label class="form-field">
+                <span>Логин</span>
+                <input name="login"
+                       type="text"
+                       minlength="3"
+                       maxlength="50"
+                       pattern="[A-Za-z0-9._-]+"
+                       autocomplete="off"
+                       placeholder="new.user"
+                       required>
+            </label>
+            <label class="form-field">
+                <span>Пароль</span>
+                <input name="password"
+                       type="password"
+                       minlength="8"
+                       maxlength="72"
+                       autocomplete="new-password"
+                       placeholder="Минимум 8 символов"
+                       required>
+            </label>
+            <label class="form-field">
+                <span>Уровень доступа</span>
+                <select name="accessLevel" required>
+                    <option value="USER">USER — только свой профиль</option>
+                    <option value="MANAGER">MANAGER — список пользователей</option>
+                    <option value="ADMIN">ADMIN — управление пользователями</option>
+                </select>
+            </label>
+            <button class="primary-button admin-create-button" type="submit">Создать</button>
+        </form>
+    </section>
+
+    <section class="table-card" aria-labelledby="admin-users-title">
+        <div class="table-card-header">
+            <div>
+                <h2 id="admin-users-title">Учётные записи</h2>
+                <p>Администратор видит пользователей и назначенные роли, но не пароли.</p>
+            </div>
+        </div>
+
+        <div class="table-scroll">
+            <table class="users-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Пользователь</th>
+                    <th>Роли</th>
+                    <th>Доступ</th>
+                    <th><span class="visually-hidden">Действия</span></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${users}">
+                    <td class="user-id" th:text="${'#' + user.id}">#3001</td>
+                    <td>
+                        <div class="user-cell">
+                            <span class="avatar" th:text="${#strings.toUpperCase(#strings.substring(user.login, 0, 1))}">U</span>
+                            <div>
+                                <strong th:text="${user.login}">user1</strong>
+                                <span>Локальная учётная запись</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="role-list">
+                            <span class="role-badge"
+                                  th:each="role : ${user.roles}"
+                                  th:classappend="${' role-' + #strings.toLowerCase(role)}"
+                                  th:text="${#strings.toUpperCase(role)}">USER</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="active-badge"
+                              th:text="${#lists.contains(user.roles, 'admin') ? 'Администратор' : 'Стандартный'}">
+                            Стандартный
+                        </span>
+                    </td>
+                    <td class="actions-cell">
+                        <form class="inline-form"
+                              method="post"
+                              th:if="${user.login != currentUser}"
+                              th:action="@{/admin/users/{id}/delete(id=${user.id})}">
+                            <button class="danger-button" type="submit">Удалить</button>
+                        </form>
+                        <span class="self-account-label" th:if="${user.login == currentUser}">
+                            Текущая сессия
+                        </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<footer class="page-footer">
+    Spring Security учебный проект · ADMIN endpoint защищён ролью
+</footer>
+</body>
+</html>

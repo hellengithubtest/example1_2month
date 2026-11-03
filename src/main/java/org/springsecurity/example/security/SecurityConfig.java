@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -41,7 +42,8 @@ public class SecurityConfig {
                                 .requestMatchers("/login", "/403", "/css/**").permitAll()
                                 .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers("/company/**").hasAuthority("ROLE_MANAGER")
-                                .requestMatchers("/user/**").hasAuthority("ROLE_USER")
+                                .requestMatchers("/users", "/users/**")
+                                    .hasAnyAuthority("ROLE_USER", "ROLE_MANAGER", "ROLE_ADMIN")
                                 .requestMatchers("/info").permitAll()
                                 .requestMatchers("/**").denyAll()
                 )
@@ -49,7 +51,12 @@ public class SecurityConfig {
                                 fl.loginPage("/login")
                                 .loginProcessingUrl("/login")
                                 .failureUrl("/login?error")
-                                .defaultSuccessUrl("/user", true)
+                                .successHandler((request, response, authentication) -> {
+                                    boolean isAdmin = authentication.getAuthorities().stream()
+                                            .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+                                    String targetUrl = isAdmin ? "/admin" : "/users";
+                                    response.sendRedirect(request.getContextPath() + targetUrl);
+                                })
                 )
                 .exceptionHandling(exceptions -> exceptions.accessDeniedPage("/403"))
                 .build();
@@ -59,7 +66,12 @@ public class SecurityConfig {
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setUserDetailsService(userDetailsService);
-        authenticationProvider.setPasswordEncoder(new BCryptPasswordEncoder());
+        authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

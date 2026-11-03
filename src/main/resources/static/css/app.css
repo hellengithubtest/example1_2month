@@ -32,7 +32,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
     font: inherit;
 }
 
@@ -414,6 +415,176 @@ a:focus-visible {
     font-size: 13px;
 }
 
+.admin-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    color: #6b3cb4;
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    background: #efe6ff;
+}
+
+.admin-summary {
+    display: grid;
+    grid-template-columns: minmax(160px, 0.7fr) minmax(160px, 0.7fr) minmax(280px, 1.6fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.admin-summary-card {
+    min-width: 0;
+}
+
+.security-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 22px;
+    border: 1px solid rgba(125, 211, 177, 0.7);
+    border-radius: 17px;
+    background: rgba(236, 253, 246, 0.86);
+    box-shadow: var(--shadow-md);
+}
+
+.security-icon {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    color: var(--white);
+    font-weight: 900;
+    background: var(--green-700);
+}
+
+.security-card strong,
+.security-card div > span {
+    display: block;
+}
+
+.security-card strong {
+    margin-bottom: 4px;
+    color: var(--green-700);
+}
+
+.security-card div > span {
+    color: var(--slate-600);
+    font-size: 12px;
+}
+
+.admin-create-card {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.7fr) minmax(540px, 1.8fr);
+    gap: 28px;
+    align-items: end;
+    margin-bottom: 24px;
+    padding: 24px 28px;
+    border: 1px solid rgba(191, 213, 232, 0.78);
+    border-radius: 22px;
+    background: var(--white);
+    box-shadow: var(--shadow-md);
+}
+
+.admin-create-card h2 {
+    margin-bottom: 6px;
+    color: var(--blue-950);
+    font-size: 21px;
+}
+
+.admin-create-card > div > p:last-child {
+    margin: 0;
+    color: var(--slate-600);
+    font-size: 13px;
+}
+
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.35fr auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.form-field {
+    display: grid;
+    gap: 7px;
+}
+
+.form-field > span {
+    color: var(--slate-600);
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.form-field input,
+.form-field select {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid var(--slate-200);
+    border-radius: 11px;
+    outline: none;
+    color: var(--slate-900);
+    background: #fbfdff;
+}
+
+.form-field input:focus,
+.form-field select:focus {
+    border-color: var(--blue-600);
+    box-shadow: 0 0 0 4px rgba(38, 128, 217, 0.13);
+}
+
+.admin-create-button {
+    min-height: 44px;
+    margin-top: 0;
+    white-space: nowrap;
+}
+
+.actions-cell {
+    width: 1%;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.inline-form {
+    display: inline;
+}
+
+.danger-button {
+    padding: 8px 11px;
+    border: 0;
+    border-radius: 9px;
+    color: var(--red-700);
+    font-size: 12px;
+    font-weight: 750;
+    cursor: pointer;
+    background: var(--red-100);
+}
+
+.danger-button:hover {
+    background: #ffd7df;
+}
+
+.self-account-label {
+    color: var(--slate-400);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 .table-card {
     overflow: hidden;
     border: 1px solid rgba(191, 213, 232, 0.78);
@@ -629,6 +800,15 @@ a:focus-visible {
 
     .summary-card {
         width: 100%;
+    }
+
+    .admin-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-create-card,
+    .admin-form-grid {
+        grid-template-columns: 1fr;
     }
 
     .table-card-header,

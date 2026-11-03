@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.util.StringUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -55,19 +56,50 @@ class LoginCsrfIntegrationTest {
                         .param("username", "user1")
                         .param("password", "password"))
                 .andExpect(status().isFound())
-                .andExpect(redirectedUrl("/user"));
+                .andExpect(redirectedUrl("/users"));
     }
 
     @Test
     @WithMockUser(username = "user1", roles = "USER")
-    void userPageIsRenderedAsHtml() throws Exception {
-        mockMvc.perform(get("/user").accept(MediaType.TEXT_HTML))
+    void regularUserSeesOnlyOwnProfile() throws Exception {
+        mockMvc.perform(get("/users").accept(MediaType.TEXT_HTML))
                 .andExpect(status().isOk())
                 .andExpect(view().name("users"))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Пользователи")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Мой профиль")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("user1")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("admin")));
+                .andExpect(content().string(not(org.hamcrest.Matchers.containsString("#3002"))))
+                .andExpect(content().string(not(org.hamcrest.Matchers.containsString("#3003"))));
+    }
+
+    @Test
+    @WithMockUser(username = "user2", roles = {"USER", "MANAGER"})
+    void managerSeesAllUsers() throws Exception {
+        mockMvc.perform(get("/users").accept(MediaType.TEXT_HTML))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Пользователи")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("#3001")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("#3003")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void adminCanSeeAllUsersOnUserPage() throws Exception {
+        mockMvc.perform(get("/users").accept(MediaType.TEXT_HTML))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("#3001")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("#3003")));
+    }
+
+    @Test
+    @WithMockUser(username = "user1", roles = "USER")
+    void regularUserCannotReadAnotherUserById() throws Exception {
+        mockMvc.perform(get("/users/3002"))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/users/3001"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("user1")));
     }
 
     @Test

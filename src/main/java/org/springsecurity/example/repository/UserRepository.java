@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     @Query("select u from User u join fetch u.roles where u.login = :login ")
     Optional<User> fetchByLogin(@Param("login") String login);
+
+    boolean existsByLoginIgnoreCase(String login);
 }

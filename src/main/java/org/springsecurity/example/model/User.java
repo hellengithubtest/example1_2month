@@ -29,7 +29,7 @@ public class User {
         this.id = id;
     }
 
-    @Column
+    @Column(nullable = false, unique = true)
     public String getLogin() {
         return login;
     }
@@ -38,7 +38,7 @@ public class User {
         this.login = login;
     }
 
-    @Column
+    @Column(nullable = false)
     public String getPassword() {
         return password;
     }
@@ -57,7 +57,7 @@ public class User {
     }
 
     @JoinTable(name = "user_company")
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany
     public List<Company> getCompanies() {
         return companies;
     }

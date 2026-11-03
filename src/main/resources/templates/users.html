@@ -10,7 +10,7 @@
 </head>
 <body class="app-page">
 <header class="topbar">
-    <a class="brand" th:href="@{/user}">
+    <a class="brand" th:href="@{/users}">
         <span class="brand-mark brand-mark-small" aria-hidden="true">S</span>
         <span>Security Lab</span>
     </a>
@@ -30,19 +30,26 @@
     <section class="page-heading">
         <div>
             <p class="eyebrow">УПРАВЛЕНИЕ ДОСТУПОМ</p>
-            <h1>Пользователи</h1>
-            <p>Список учётных записей и назначенных им ролей.</p>
+            <h1 th:text="${canViewAll ? 'Пользователи' : 'Мой профиль'}">Пользователи</h1>
+            <p th:text="${canViewAll
+                ? 'Список учётных записей и назначенных им ролей.'
+                : 'Данные вашей учётной записи и назначенные роли.'}">
+                Список учётных записей и назначенных им ролей.
+            </p>
         </div>
         <div class="summary-card">
             <strong th:text="${#lists.size(users)}">0</strong>
-            <span>пользователей</span>
+            <span th:text="${canViewAll ? 'пользователей' : 'ваша запись'}">пользователей</span>
         </div>
     </section>
 
     <section class="table-card" aria-labelledby="users-table-title">
         <div class="table-card-header">
             <div>
-                <h2 id="users-table-title">Активные учётные записи</h2>
+                <h2 id="users-table-title"
+                    th:text="${canViewAll ? 'Активные учётные записи' : 'Учётная запись'}">
+                    Активные учётные записи
+                </h2>
                 <p>Пароли не выводятся — отображаются только безопасные данные профиля.</p>
             </div>
         </div>

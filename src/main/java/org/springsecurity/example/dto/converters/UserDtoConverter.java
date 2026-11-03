@@ -11,12 +11,4 @@ public class UserDtoConverter {
         return new UserDto(domain.getId(), domain.getLogin(), null, domain.getRoles());
     }
 
-    public User toDomain(UserDto dto) {
-        var user = new User();
-        user.setId(dto.getId());
-        user.setLogin(dto.getLogin());
-        user.setPassword(dto.getPassword());
-        user.setRoles(dto.getRoles());
-        return user;
-    }
 }
